@@ -212,5 +212,6 @@ gradle-app.setting
 
 ## private
 application-db.properties
+application-info.properties
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,java,intellij,gradle,maven

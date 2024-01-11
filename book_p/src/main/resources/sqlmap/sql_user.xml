@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.book_p.mapper.UserMapper">
+    <select id="getUserInfoForId" resultType="kr.co.book_p.vo.UserVO">
+        SELECT * FROM P_USER;
+        WHERE user_mail = #{user_mail}
+    </select>
+
+    <insert id="saveLoginHistory">
+        INSERT INTO P_USER_HISTORY (user_idx, user_type, remoteIP)
+        VALUE(
+            #{user_idx},
+            #{user_type},
+            #{remoteIP}
+        );
+    </insert>
+</mapper>
