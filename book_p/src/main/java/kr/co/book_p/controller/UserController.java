@@ -10,7 +10,6 @@ import kr.co.book_p.vo.MailVO;
 import kr.co.book_p.vo.UserVO;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,12 +42,16 @@ public class UserController extends BaseController{
         }
 
         UserVO param = userMapper.getUserInfoForId(userVO);
+        if(param==null) {
+            return responseService.getFailResult("login", "존재하지 않는 회원입니다.");
+        }
+
         if(param.getUser_type()==2) {
             return responseService.getFailResult("login", "탈퇴 된 계정입니다.");
         }
 
-        BCryptPasswordEncoder pwEncoder = new BCryptPasswordEncoder();
-        if(pwEncoder.matches(userVO.getUser_pw(), param.getUser_pw())) {
+        //BCryptPasswordEncoder pwEncoder = new BCryptPasswordEncoder();
+        if(userVO.getUser_pw().equals(param.getUser_pw())) {
             if(param.getUser_type()==0) {
                 return responseService.getFailResult("login", "회원 인증이 진행되지 않은 계정입니다.");
             }

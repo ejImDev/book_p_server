@@ -15,14 +15,11 @@ import java.util.Properties;
 @Component
 public class MailSender {
 
-    @Value("${email.pw}")
-    private String mailpasswd;
+    private String mailpasswd = "";
 
-    @Value("${email.id}")
-    private String FROM;
+    private String FROM = "";
     private String FROMNAME = "TEST";
 
-    @Value("${email_id}")
     private String SMTP_USERNAME;
     private String HOST = "smtp.gmail.com";
     private int PORT = 587;

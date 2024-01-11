@@ -3,8 +3,8 @@
 
 <mapper namespace="kr.co.book_p.mapper.UserMapper">
     <select id="getUserInfoForId" resultType="kr.co.book_p.vo.UserVO">
-        SELECT * FROM P_USER;
-        WHERE user_mail = #{user_mail}
+        SELECT * FROM P_USER
+        WHERE user_email = #{user_email}
     </select>
 
     <insert id="saveLoginHistory">
