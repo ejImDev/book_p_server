@@ -4,16 +4,22 @@ import jakarta.servlet.http.HttpServletRequest;
 import kr.co.book_p.mapper.MailMapper;
 import kr.co.book_p.mapper.UserMapper;
 import kr.co.book_p.model.CommonResult;
+import kr.co.book_p.security.JwtIssuer;
 import kr.co.book_p.service.MailService;
 import kr.co.book_p.service.ResponseService;
 import kr.co.book_p.vo.MailVO;
 import kr.co.book_p.vo.UserVO;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,6 +27,7 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class UserController extends BaseController{
 
+    private final JwtIssuer jwtIssuer;
     private final ResponseService responseService;
     private final UserMapper userMapper;
     private final MailMapper mailMapper;
@@ -31,7 +38,7 @@ public class UserController extends BaseController{
      * @param rq
      * @param userVO
      */
-    @PostMapping("login")
+    @PostMapping("/auth/login")
     public CommonResult register(HttpServletRequest rq, @RequestBody UserVO userVO) throws Exception {
 
         if(StringUtils.isEmpty(userVO.getUser_email())){
@@ -50,8 +57,8 @@ public class UserController extends BaseController{
             return responseService.getFailResult("login", "탈퇴 된 계정입니다.");
         }
 
-        //BCryptPasswordEncoder pwEncoder = new BCryptPasswordEncoder();
-        if(userVO.getUser_pw().equals(param.getUser_pw())) {
+        BCryptPasswordEncoder pwEncoder = new BCryptPasswordEncoder();
+        if(pwEncoder.matches(userVO.getUser_pw(), param.getUser_pw())) {
             if(param.getUser_type()==0) {
                 return responseService.getFailResult("login", "회원 인증이 진행되지 않은 계정입니다.");
             }
@@ -61,7 +68,11 @@ public class UserController extends BaseController{
             rs.setRemoteIP(getClientIP(rq));
             userMapper.saveLoginHistory(rs);
 
-            return responseService.getSuccessResult("login", "로그인 성공");
+            String _token = jwtIssuer.issue(param.getIdx_user(), param.getUser_email(), List.of(param.getUser_type()));
+            Map<String, Object> param0 = new HashMap<String, Object>();
+            param0.put("token",_token);
+
+            return responseService.getSuccessResult(param0, "login", "로그인 성공");
         } else {
             return responseService.getFailResult("login", "비밀번호가 일치하지 않습니다.");
         }
@@ -71,7 +82,7 @@ public class UserController extends BaseController{
      * 아이디 중복 확인
      * @param userVO
      */
-    @PostMapping("id_dupl_check")
+    @PostMapping("/id_dupl_check")
     public CommonResult id_dupl_check(@RequestBody UserVO userVO) throws Exception {
 
         String regexId = "^[_a-zA-Z0-9-\\.]+@[\\.a-zA-Z0-9-]+\\.[a-zA-Z]+$";
@@ -94,7 +105,7 @@ public class UserController extends BaseController{
      * @return
      * @throws Exception
      */
-    @PostMapping("mail_confirm")
+    @PostMapping("/mail_confirm")
     public CommonResult mail_confirm(@RequestBody UserVO userVO) throws Exception {
 
         String regexId = "^[_a-zA-Z0-9-\\.]+@[\\.a-zA-Z0-9-]+\\.[a-zA-Z]+$";

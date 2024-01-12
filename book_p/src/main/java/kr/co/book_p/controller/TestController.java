@@ -5,6 +5,7 @@ import kr.co.book_p.model.CommonResult;
 import kr.co.book_p.service.ResponseService;
 import kr.co.book_p.vo.TestVO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,8 +18,17 @@ public class TestController {
     private final ResponseService responseService;
     private final TestMapper testMapper;
 
+    @GetMapping("/")
+    public String index() {
+        return "Hello";
+    }
 
-    @PostMapping("test")
+    @GetMapping("/secureTest")
+    public String secureTest() {
+        return "logged";
+    }
+
+    @PostMapping("/test")
     public CommonResult viewTest () {
         List<TestVO> list = testMapper.getTestList();
         System.out.println("list = " + list);

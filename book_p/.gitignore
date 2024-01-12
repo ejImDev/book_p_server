@@ -211,8 +211,6 @@ gradle-app.setting
 *.hprof
 
 ## private
-application-db.properties
-application-info.properties
-src/test
+application.yml
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,java,intellij,gradle,maven
