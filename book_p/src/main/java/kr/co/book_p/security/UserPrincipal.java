@@ -1,5 +1,6 @@
 package kr.co.book_p.security;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,7 +13,10 @@ import java.util.Collection;
 public class UserPrincipal implements UserDetails {
 
     private final Integer userIdx;
-    private final String userId;
+    private final String userEmail;
+
+    @JsonIgnore
+    private final String password;
     private final Collection<? extends GrantedAuthority> authorities;
 
     @Override
@@ -22,12 +26,12 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public String getPassword() {
-        return null;
+        return password;
     }
 
     @Override
     public String getUsername() {
-        return userId;
+        return userEmail;
     }
 
     @Override

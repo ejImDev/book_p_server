@@ -17,7 +17,7 @@ public class JwtIssuer {
 
     private final JwtProperties properties;
 
-    public String issue(Integer idx, String email, List<Integer> roles) {
+    public String issue(Integer idx, String email, List<String> roles) {
         return JWT.create()
                 .withSubject(String.valueOf(idx))
                 .withExpiresAt(Instant.now().plus(Duration.of(1, ChronoUnit.DAYS)))

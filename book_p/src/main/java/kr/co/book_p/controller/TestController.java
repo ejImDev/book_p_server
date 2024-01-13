@@ -2,9 +2,11 @@ package kr.co.book_p.controller;
 
 import kr.co.book_p.mapper.TestMapper;
 import kr.co.book_p.model.CommonResult;
+import kr.co.book_p.security.UserPrincipal;
 import kr.co.book_p.service.ResponseService;
 import kr.co.book_p.vo.TestVO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,8 +26,9 @@ public class TestController {
     }
 
     @GetMapping("/secureTest")
-    public String secureTest() {
-        return "logged";
+    public String secureTest(@AuthenticationPrincipal UserPrincipal userPrincipal)
+    {
+        return "logged idx : "+userPrincipal.getUserIdx() + ", userID + "+userPrincipal.getUserEmail();
     }
 
     @PostMapping("/test")

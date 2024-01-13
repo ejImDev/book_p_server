@@ -14,7 +14,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
@@ -29,6 +28,7 @@ public class UserController extends BaseController{
 
     private final JwtIssuer jwtIssuer;
     private final ResponseService responseService;
+
     private final UserMapper userMapper;
     private final MailMapper mailMapper;
     private final MailService mailService;
@@ -38,7 +38,7 @@ public class UserController extends BaseController{
      * @param rq
      * @param userVO
      */
-    @PostMapping("/auth/login")
+    @PostMapping("/tmp/login")
     public CommonResult register(HttpServletRequest rq, @RequestBody UserVO userVO) throws Exception {
 
         if(StringUtils.isEmpty(userVO.getUser_email())){
@@ -66,9 +66,11 @@ public class UserController extends BaseController{
             rs.setIdx_user(param.getIdx_user());
             rs.setUser_type(param.getUser_type());
             rs.setRemoteIP(getClientIP(rq));
-            userMapper.saveLoginHistory(rs);
+            //userMapper.saveLoginHistory(rs);
 
-            String _token = jwtIssuer.issue(param.getIdx_user(), param.getUser_email(), List.of(param.getUser_type()));
+            if(param.getUser_type()==1) param.setRole("ROLE_USER");
+            if(param.getUser_type()==9) param.setRole("ROLE_ADMIN");
+            String _token = jwtIssuer.issue(param.getIdx_user(), param.getUser_email(), List.of(param.getRole()));
             Map<String, Object> param0 = new HashMap<String, Object>();
             param0.put("token",_token);
 
