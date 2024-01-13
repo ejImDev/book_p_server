@@ -38,7 +38,7 @@ public class UserController extends BaseController{
      * @param rq
      * @param userVO
      */
-    @PostMapping("/tmp/login")
+    @PostMapping("/auth/login")
     public CommonResult register(HttpServletRequest rq, @RequestBody UserVO userVO) throws Exception {
 
         if(StringUtils.isEmpty(userVO.getUser_email())){
