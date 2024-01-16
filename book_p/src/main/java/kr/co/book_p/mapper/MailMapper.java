@@ -5,5 +5,11 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface MailMapper {
-    //public void addEmailLog(MailVO mailSendVO);
+
+    public int addEmailLog(MailVO mailSendVO);
+    public int addAuthLog(MailVO mailSendVO);
+
+    public MailVO getMailCheck(String receiver);
+
+    public Integer updateAuthState(MailVO paramVo);
 }

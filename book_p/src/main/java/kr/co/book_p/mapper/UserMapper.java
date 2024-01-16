@@ -9,4 +9,6 @@ import java.util.List;
 public interface UserMapper {
     public UserVO getUserInfoForId(UserVO userVO);
     public void saveLoginHistory(UserVO userVO);
+
+    public Integer savUserInfo(UserVO userVo);
 }
