@@ -15,14 +15,23 @@ import java.util.Properties;
 @Component
 public class MailSender {
 
-    private String mailpasswd = "";
+    @Value("${mail.password}")
+    private String mailpasswd;
 
-    private String FROM = "";
+    @Value("${mail.userid}")
+    private String FROM;
+
+    @Value("${mail.username}")
     private String FROMNAME = "TEST";
 
+    @Value("${mail.userid}")
     private String SMTP_USERNAME;
-    private String HOST = "smtp.gmail.com";
-    private int PORT = 587;
+
+    @Value("${mail.host}")
+    private String HOST;
+
+    @Value("${mail.port}")
+    private int PORT;
 
     public void sender(String To, String Subject, Object Body) throws Exception {
         Properties props = System.getProperties();

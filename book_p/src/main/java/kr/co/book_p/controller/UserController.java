@@ -135,8 +135,8 @@ public class UserController extends BaseController{
         mailSendVO.setAuthKey(authKey);
         mailMapper.addAuthLog(mailSendVO);
 
-        //mailSendVO.setReceiver_name(userVO.getUser_name());
-        //mailService.sendMail(mailSendVO, null, 0);
+        mailSendVO.setReceiver_name("회원가입 안내메일");
+        mailService.sendMail(mailSendVO, null, 0);
         return responseService.getSuccessResult("join", "인증 메일을 발송했습니다.");
     }
 
