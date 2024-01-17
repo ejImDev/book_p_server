@@ -3,10 +3,40 @@
 
 <mapper namespace="kr.co.book_p.mapper.MailMapper">
 
-    <insert id="saveLoginHistory" parameterType="kr.co.book_p.vo.MailVO">
-        INSERT INTO addEmailLog ()
-        VALUE(
-
-        );
+    <insert id="addEmailLog" parameterType="kr.co.book_p.vo.MailVO">
+        INSERT INTO P_MAIL_HISTORY (receiver, mail_type, mail_title, mail_content)
+            VALUE(
+                #{receiver},
+                #{mail_type},
+                #{title},
+                #{content}
+            );
     </insert>
+
+    <insert id="addAuthLog" parameterType="kr.co.book_p.vo.MailVO">
+        INSERT INTO P_USER_AUTH (receiver, authKey)
+            VALUE(
+                #{receiver},
+                #{authKey}
+            );
+    </insert>
+
+    <select id="getMailCheck" resultType="kr.co.book_p.vo.MailVO">
+        SELECT *
+        FROM (
+                 SELECT
+                        ROW_NUMBER() OVER(PARTITION BY receiver ORDER BY create_dt DESC) AS rn,
+                         P_USER_AUTH.*
+                 FROM P_USER_AUTH
+                 WHERE RECEIVER = #{receiver}
+             ) sub
+        WHERE sub.rn = 1
+    </select>
+
+    <update id="updateAuthState" parameterType="kr.co.book_p.vo.MailVO">
+        UPDATE P_USER_AUTH
+        SET AUTH_TYPE = 1
+        WHERE RECEIVER = #{receiver} AND AUTHKEY = #{authKey}
+    </update>
+
 </mapper>

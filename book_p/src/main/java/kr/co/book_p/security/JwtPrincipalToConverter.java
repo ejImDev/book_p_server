@@ -13,7 +13,7 @@ public class JwtPrincipalToConverter {
     public UserPrincipal convert(DecodedJWT jwt) {
         return UserPrincipal.builder()
                 .userIdx(Integer.valueOf(jwt.getSubject()))
-                .userId(jwt.getClaim("e").asString())
+                .userEmail(jwt.getClaim("e").asString())
                 .authorities(extractAuthoritiesFromClaim(jwt))
                 .build();
     }

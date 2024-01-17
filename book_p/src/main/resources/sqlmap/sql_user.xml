@@ -7,10 +7,21 @@
         WHERE user_email = #{user_email}
     </select>
 
+    <insert id="savUserInfo">
+        INSERT INTO P_USER (user_email, user_pw, user_name, user_phone, user_type)
+                VALUE(
+                #{user_email},
+                #{user_pw},
+                #{user_name},
+                #{user_phone},
+                #{user_type}
+            );
+    </insert>
+
     <insert id="saveLoginHistory">
-        INSERT INTO P_USER_HISTORY (user_idx, user_type, remoteIP)
+        INSERT INTO P_USER_HISTORY (idx_user, user_type, remoteIP)
         VALUE(
-            #{user_idx},
+            #{idx_user},
             #{user_type},
             #{remoteIP}
         );
