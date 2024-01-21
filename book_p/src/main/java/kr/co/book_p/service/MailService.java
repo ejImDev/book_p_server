@@ -71,7 +71,11 @@ public class MailService {
 
         // 임시비밀번호 메일
         if(_mFTyp==1){
-
+            try {
+                mailSender.sender(mailSendVO.getReceiver(), mailSendVO.getTitle(), mailSendVO.getContent());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
