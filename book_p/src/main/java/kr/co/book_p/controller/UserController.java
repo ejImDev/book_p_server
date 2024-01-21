@@ -5,13 +5,16 @@ import kr.co.book_p.mapper.MailMapper;
 import kr.co.book_p.mapper.UserMapper;
 import kr.co.book_p.model.CommonResult;
 import kr.co.book_p.security.JwtIssuer;
+import kr.co.book_p.security.UserPrincipal;
 import kr.co.book_p.service.MailService;
 import kr.co.book_p.service.ResponseService;
 import kr.co.book_p.vo.MailVO;
 import kr.co.book_p.vo.UserVO;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -35,6 +38,8 @@ public class UserController extends BaseController{
      * 로그인
      * @param rq
      * @param userVO
+     * @return CommonResult
+     * @throws Exception
      */
     @PostMapping("/auth/login")
     public CommonResult register(HttpServletRequest rq, @RequestBody UserVO userVO) throws Exception {
@@ -81,6 +86,8 @@ public class UserController extends BaseController{
     /**
      * 아이디 중복 확인
      * @param userVO
+     * @return CommonResult
+     * @throws Exception
      */
     @PostMapping("/auth/id_dupl_check")
     public CommonResult id_dupl_check(@RequestBody UserVO userVO) throws Exception {
@@ -102,7 +109,7 @@ public class UserController extends BaseController{
     /**
      * 회원가입 - 인증메일 발송
      * @param userVO
-     * @return
+     * @return CommonResult
      * @throws Exception
      */
     @PostMapping("/auth/mail_confirm")
@@ -143,7 +150,7 @@ public class UserController extends BaseController{
     /**
      * 회원가입 - 메일 인증번호 체크
      * @param paramVo
-     * @return
+     * @return CommonResult
      * @throws Exception
      */
     @PostMapping("/auth/email_check")
@@ -172,7 +179,7 @@ public class UserController extends BaseController{
     /**
      * 회원 가입
      * @param userVo
-     * @return
+     * @return CommonResult
      * @throws Exception
      */
     @PostMapping("/auth/join_user")
@@ -217,6 +224,136 @@ public class UserController extends BaseController{
             return responseService.getSuccessResult("join", "회원 가입에 성공했습니다.");
         } else {
             return responseService.getFailResult("join", "입력 데이터를 다시 확인해주세요.");
+        }
+    }
+
+    /**
+     * 회원 탈퇴
+     * @param userPrincipal
+     * @param userVo
+     * @return CommonResult
+     * @throws Exception
+     */
+    @PostMapping("/member/del")
+    public CommonResult member_del(@AuthenticationPrincipal UserPrincipal userPrincipal, @RequestBody UserVO userVo) throws Exception {
+
+        if(!userPrincipal.getUserIdx().equals(userVo.getIdx_user())){
+            return responseService.getFailResult("member_del", "로그인 상태를 다시 확인해주세요.");
+        }
+        UserVO param = userMapper.getUserInfoForIdx(userVo);
+        if(param!=null) {
+            if(param.getUser_type()==2) {
+                return responseService.getFailResult("member_del", "회원 탈퇴가 이미 진행되었습니다.");
+            }
+            if(param.getUser_type()==9) {
+                return responseService.getFailResult("member_del", "관리자 계정은 삭제가 불가능 합니다.");
+            }
+            if(userVo.getConfirm_code()==null || userVo.getConfirm_code()!=1){
+                return responseService.getFailResult("member_del", "탈퇴 약관에 대한 동의를 진행해주세요.");
+            }
+
+            UserVO _r = new UserVO();
+            _r.setIdx_user(userPrincipal.getUserIdx());
+            _r.setUser_type(2);
+
+            Integer rs = userMapper.memberDropOutByIdx(_r);
+
+            if(rs == 1){
+                return responseService.getSuccessResult("member_del", "회원 탈퇴를 마쳤습니다.");
+            }
+        }
+        return responseService.getFailResult("member_del", "입력된 정보를 다시 확인해주세요.");
+    }
+
+    /**
+     * 회원 정보 수정 (비밀번호 수정 포함)
+     * @param userVO
+     * @return CommonResult
+     */
+    @PostMapping("/member/modInfo")
+    public CommonResult member_modInfo(@RequestBody UserVO userVO) {
+
+        UserVO userInfo = userMapper.getUserInfoForIdx(userVO);
+
+        if(userInfo!=null){
+            if(StringUtils.isEmpty(userVO.getUser_name())){
+                return responseService.getFailResult("member_mod","이름을 입력한 후 다시 시도해주세요.");
+            }
+            if(StringUtils.isEmpty(userVO.getUser_phone())){
+                return responseService.getFailResult("member_mod","연락처를 입력한 후 다시 시도해주세요.");
+            }
+
+            if (StringUtils.isNotEmpty(userVO.getUser_pw())) {
+                if (StringUtils.isEmpty(userVO.getUser_pw_origin())) {
+                    return responseService.getFailResult("member_mod","기존 비밀번호를 입력해주세요.");
+                }
+
+                BCryptPasswordEncoder passEncoder = new BCryptPasswordEncoder();
+
+                if (passEncoder.matches(userVO.getUser_pw_origin(), userInfo.getUser_pw())) {
+
+                    String regexPw = "(?=.*\\d{1,50})(?=.*[~`!@#$%\\^&*()-+=]{1,50})(?=.*[a-zA-Z]{2,50}).{10,20}$";
+                    Matcher matcherPw = Pattern.compile(regexPw).matcher(userVO.getUser_pw());
+
+                    if (userVO.getUser_pw().length() > 12 || userVO.getUser_pw().length() < 8) {
+                        return responseService.getFailResult("member_mod","비밀번호는 8~12자 사이로 지정해주세요.");
+                    }
+                    if (!matcherPw.find()) {
+                        return responseService.getFailResult("member_mod","영어, 숫자, 특수문자로 조합된 비밀번호만 사용가능합니다.");
+                    }
+                    String cg_pw = passEncoder.encode(userVO.getUser_pw());
+                    userVO.setUser_pw(cg_pw);
+                } else {
+                    return responseService.getFailResult("member_mod","기존 비밀번호를 다시 확인해 주세요.");
+                }
+            } else {
+                userVO.setUser_pw(userInfo.getUser_pw());
+            }
+            Integer rs = userMapper.modUserInfo(userVO);
+
+            if(rs==1){
+                return responseService.getSuccessResult("member_mod","회원 정보를 수정하였습니다.");
+            }else{
+                return responseService.getFailResult("member_mod","데이터를 다시 확인해주세요");
+            }
+
+        } else {
+            return responseService.getFailResult("member_mod","존재하지 않는 회원입니다.");
+        }
+    }
+
+    /**
+     * 새 비밀번호 발송
+     * @param userVO
+     * @return CommonResult
+     * @throws Exception
+     */
+    @PostMapping("/auth/chg_pw")
+    public CommonResult chg_pw(@RequestBody UserVO userVO) throws Exception {
+
+        UserVO userInfo = userMapper.getUserInfoForId(userVO);
+
+        if(userInfo!=null){
+            String tempPW = mailService.getRamdomPassword();
+            BCryptPasswordEncoder passEncoder = new BCryptPasswordEncoder();
+            String cgPw = passEncoder.encode(tempPW);
+            userInfo.setUser_pw(cgPw);
+
+            Integer rs = userMapper.updateUserPW(userInfo);
+
+            if(rs==1){
+                MailVO mailSendVO = new MailVO();
+                mailSendVO.setReceiver(userInfo.getUser_email());
+                mailSendVO.setTitle("[BOOK_P] 임시비밀번호 발급");
+                mailSendVO.setContent("새로 발급된 임시비밀번호 입니다. 로그인 후 꼭 비밀번호 변경을 해 주세요. : " + tempPW);
+                mailService.sendMail(mailSendVO, null, 1); // 1: 임시비밀번호 발급
+                return responseService.getSuccessResult("findPw","임시 비밀번호가 발급되었습니다.");
+            }else{
+                return responseService.getFailResult("findPw","메일 발송을 실패하였습니다.");
+            }
+
+        } else {
+            return responseService.getFailResult("findPw","존재하지 않는 회원입니다.");
         }
     }
 

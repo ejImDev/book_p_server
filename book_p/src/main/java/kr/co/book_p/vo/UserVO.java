@@ -10,7 +10,8 @@ public class UserVO {
     Integer idx_user;
     String user_email;
     String user_pw;
-    Integer user_type; // 0:임시회원 1:정회원 2:탈퇴회원 99:관리자
+    String user_pw_origin;
+    Integer user_type; // 0:임시회원 1:정회원 2:탈퇴회원 9:관리자
     String role;
 
     String user_name;
@@ -21,4 +22,5 @@ public class UserVO {
     String update_dt; // 업데이트 일시
 
     String remoteIP;
+
 }
